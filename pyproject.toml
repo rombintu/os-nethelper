@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "network-helper"
+version = "0.1.0"
+description = ""
+authors = ["Nickolsky <romb.intu@gmail.com>"]
+readme = "README.md"
+packages = [{include = "network_helper"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+python-openstackclient = "5.5.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
