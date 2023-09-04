@@ -47,6 +47,7 @@ class Openstack:
         self.get_networks()
         self.get_projects()
         self.get_rbac_policies()
+        self.get_use_ports()
         
     def get_networks(self):
         self.networks = [Network(n.id, n.name, n.is_shared) for n in self.conn.network.networks()]
@@ -61,6 +62,9 @@ class Openstack:
             RBACPolicy(p.id, p.object_type, p.target_project_id, p.object_id) for p in self.conn.network.rbac_policies()
         ]
 
+    def get_use_ports(self):
+        self.use_ports = [port.get('network_id') for port in self.conn.network.ports()]
+
 if __name__ == "__main__":
     opts = [
         cfg.BoolOpt('all', default=False, help='Show all networks'),
@@ -71,7 +75,7 @@ if __name__ == "__main__":
 
     os = Openstack()
     table = PrettyTable()
-    table.field_names = ["Network", "CIDRs", "Total quota", "Projects"]
+    table.field_names = ["Network", "CIDRs", "Total quota", "Actually used", "Projects"]
     networks = None
     
     if not os.networks:
@@ -82,6 +86,8 @@ if __name__ == "__main__":
         projects_rbac = []
         projects_name = []
         cidrs = []
+
+        use_ports = os.use_ports.count(network._id)
 
         if not cli_opts.all and 'vlan' not in network.name.lower():
             continue
@@ -103,6 +109,6 @@ if __name__ == "__main__":
                 if p1 == p2._id:
                     summ += p2.quota_instances
                     projects_name.append("{} (quota {})".format(p2.name, p2.quota_instances))
-        table.add_row([network.name, "\n".join(cidrs), summ, "\n".join(projects_name)])
+        table.add_row([network.name, "\n".join(cidrs), summ, use_ports, "\n".join(projects_name)])
         
     print(table)
